@@ -1,3 +1,7 @@
+#Things to do
+1)Prepare template css for development
+2)Use bootstrap twitter css for development
+
 #Learning Rails
 ##Create new apps
 rails new ticketeeSP
@@ -78,6 +82,141 @@ development:
   username: root
   password: password
   encoding: utf8
+
+## Create db
+rake db:migrate
+
+--Finish preparation--
+
+#Preparing for development
+#First Step
+##Create a feature file (features/creating_projects.feature)
+
+Feature: Creating projects
+  In order to have projects to assign tickets to 
+  As a user
+  I want to create them easily
+  
+  Scenario: Creating a project
+    Given I am on the homepage
+    When I follow "New Project"
+    And I fill in "Name" with "TextMate 2"
+    And I press "Create Project"
+    Then I should see "Project has been created."
+
+
+## Run rake cucumber:ok command
+  rake cucumber:ok
+  or
+  rock
+
+## First thing to do 
+   delete public/index.html
+   rm public/index.html
+
+## Edit path to root at routes.rb
+   root :to => "projects#index"
+
+## Create project controller
+r g controller projects
+or 
+rgc projects
+
+## The action 'index' could not be found for ProjectsController ...
+Given I am on the homepage
+  The action 'index' could not be found for ProjectsController ...
+
+edit the projects controller file app/controllers/projects_controller.rb
+
+def index
+end
+
+## Missing template warning
+Given I am on the homepage
+Missing template projects/index, application/index
+  with {:handlers=>[:erb, :builder],
+        :formats=>[:html],
+        :locale=>[:en, :en]}.
+  Searched in:
+    * ".../ticketee/app/views"
+
+
+
+create a file at view/projects/index.html.erb
+
+
+#Given I am on the homepage
+    When I follow "New Project"
+      no link with title, id or text 'New Project' found
+
+
+## How to create link_to on erb
+<%= link_to "New Project", new_project_path %>
+
+## Add routes to config/routes.rb file
+resources :projects
+
+## Creating Model
+rails g model project name:string
+
+
+##Preparing Partial Forms
+new.html.erb
+<h2>New Project</h2>
+<%= render 'form' %>
+
+
+## How to create a form in erb (partial file: _form.html.erb )
+
+<%= form_for(@project) do |f| %>
+  <p>
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+  </p>
+  <%= f.submit %>
+<% end %>
+
+
+## And I press "Create Project"
+      The action 'create' could not be found for ProjectsController (AbstractController::ActionNotFound)
+
+Automatically know that post action will call create methods
+
+
+## create methods in the controller
+def create
+  @project = Project.new(params[:project])
+  @project.save
+  flash[:notice] = "Project has been created."
+  redirect_to @project
+end
+
+## show method
+def show
+	@project = Project.find(params[:id])
+end
+
+## show the result in show.html.erb
+<h2><%= @project.name %></h2>
+
+
+
+
+## show flash notice edit application.html.erb
+add 
+<% flash.each do |key, value| %>
+   <div class='flash' id='<%= key %>'>
+     <%= value %>
+   </div>
+<% end %>
+
+before <%= yield %>
+
+
+
+
+
+
 
 
 
