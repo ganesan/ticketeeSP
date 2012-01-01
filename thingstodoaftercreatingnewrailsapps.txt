@@ -1,0 +1,31 @@
+if you don't creating using -T
+rm -Rf test
+
+git init
+git add .
+git commit -am "Initial Rails 3 Commit"
+
+touch memo.txt
+mkdir factories
+touch features/support/factories.rb
+
+Contents of the file
+Dir[Rails.root + "factories/*.rb"].each do |file|
+  require file
+end
+
+
+## First bundle install
+bundle install
+
+## --binstubs
+bundle install --binstubs
+
+## install cucumber
+rails generate cucumber:install
+
+## install rspec
+rails generate rspec:install
+
+git add .
+git commit -am "Base Preparation[Rspec,Cucumber,binstubs]"

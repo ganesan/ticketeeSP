@@ -213,13 +213,100 @@ add
 before <%= yield %>
 
 
+#Validation
+
+##Preparation
+Change the Gemfile
+gem 'dynamic_form'
+
+##Change the model/project.rb
+In the model
+  validates :name, :presence => true
+
+## Change the create method for validation
+def create
+  @project = Project.new(params[:project])
+  if @project.save
+    flash[:notice] = "Project has been created."
+    redirect_to @project
+  else
+    flash[:alert] = "Project has not been created."
+    render :action => "new"
+  end
+end
+
+## Edit _form.html.erb 
+should be changed to 
+<%=form_for(@project) do |f| %>
+* <%= f.error_messages %>
+	<p>
+		<%= f.label :name %>
+		<%= f.text_field :name %>
+	</p>
+	<%= f.submit %>
+<% end %>
+
+
+#Viewing List of CRUD (READ)
+## feature/viewing_project.feature
+Feature: Viewing projects
+  In order to assign tickets to a project
+  As a user
+  I want to be able to see a list of available projects
+  I want to be able to navigate from the project list
+
+Scenario: Listing all the projects
+  Given there is a project called "TextMate 2"
+  And I am on the homepage
+  When I follow "TextMate 2"
+  Then I should be on the project page for "TextMate 2"
+
+##Using Factory_girl
+Add           gem 'factory_girl' 
+to Gemfile
+group :test do
+end
+would be good
+
+
+## How to use Factory_girl
+  Project.create(:name => name) is how you create a new instance
+This is how
+  Factory(:project, :name => name)
+
+##Factory not registered: project (ArgumentError)
+
+## Where to put the factory files
+root/factories/
+
+
+## features/support/factories.rb so that it will load automatically each time 
+## Cucumber starts
+Dir[Rails.root + "factories/*.rb"].each do |file|
+  require file
+end
+
+## Creating Link
+<%= link_to project.name, project %>
+
+<h2>Projects</h2>
+<ul>
+	<% @projects.each do |project| %>
+	<li><%= link_to project.name, project%></li>
+	<% end %>
+</ul>
+
+<%= link_to "New Project", new_project_path %>
 
 
 
+## Instance not set
+You have a nil object when you didn't expect it!
+You might have expected an instance of Array.
 
-
-
-
+def index
+@projects = Project.all
+end
 
 
 
