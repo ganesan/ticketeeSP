@@ -305,10 +305,77 @@ You have a nil object when you didn't expect it!
 You might have expected an instance of Array.
 
 def index
-@projects = Project.all
+   @projects = Project.all
 end
 
 
+
+# Edit 
+The edit_project_path method generates the link to the Project object, pointing at the ProjectsController’s edit action. This method is provided to you because of the resources :projects line in config/routes.rb.
+
+<%= link_to "Edit Project", edit_project_path(@project) %>
+
+def edit
+  @project = Project.find(params[:id])
+end
+
+
+# Update
+
+def update
+@project = Project.find(params[:id])
+  if @project.update_attributes(params[:project])
+    flash[:notice] = "Project has been updated."
+    redirect_to @project
+  else
+    flash[:alert] = "Project has not been updated."
+    render :action => "edit"
+  end
+end
+
+@project.update_attributes(params[:project])
+returns true if updated, false if fails
+
+
+# Delete
+Feature: Deleting Projects
+  In order to remove needless projects
+  As a project manager
+  I want to be able to delete them
+
+Scenario: Deleting a project
+  Given there is a project called "TextMate 2"
+  And I am on the homepage
+  When I follow "TextMate 2"
+  And I follow "Delete Project"
+  Then I should see "Project has been deleted."
+  Then I should not see "TextMate 2"
+
+
+## Add to show
+<%= link_to "Delete Project", @project, :method => :delete,
+  :confirm => "Are you sure you want to delete this project?" %>
+
+## destroy methods
+def destroy
+   @project = Project.find(params[:id])
+   @project.destroy
+   flash[:notice] = "Project has been deleted."
+   redirect_to projects_path
+end
+
+
+## About redirect
+  redirect_to projects_path
+  will redirect to
+  /projects
+
+
+
+
+# How to run in production environment
+rake db:migrate RAILS_ENV=production
+rails server -e production
 
 
 
