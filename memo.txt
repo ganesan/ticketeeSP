@@ -375,7 +375,26 @@ end
 
 # How to run in production environment
 rake db:migrate RAILS_ENV=production
+rake assets:precompile
 rails server -e production
 
 
+Due to asset serving having been turned off automatically in the production environment, assets will need to be precompiled by running rake assets:precompile before launching the server in production. If this is not run, the styles for the application will be missing.
+
+
+# Looking for a page that is not there
+this is done over in rspec 
+
+
+
+#Using before filter
+before_filter :find_project, :only =>[:show, :edit, :update, :destroy]
+
+private
+  def find_project
+    @project = Project.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+    flash[:alert] = "The project you were looking for count not be found."
+    redirect_to projects_path
+  end
 
