@@ -575,6 +575,135 @@ Description can't be blank, Description is too short (minimum is 10 characters)
 this must be in the cucumber feature file.
 
 
+#Viewing Ticket
+Function to view ticket individually
+
+Feature: Viewing tickets
+In order to view the tickets for a project
+As a user
+I want to see them on that project's page
+Background:
+  Given there is a project called "TextMate 2"
+  And that project has a ticket:
+    | title | description |
+    |  Make it shiny! | Gradients! Starbursts! Oh my! |
+  And there is a project called "Internet Explorer"
+  And that project has a ticket:
+    | title                | description   |
+    | Standards compliance | Isn’t a joke. |
+  And I am on the homepage
+  Scenario: Viewing tickets for a given project
+    When I follow "TextMate 2"
+    Then I should see "Make it shiny!"
+    And I should not see "Standards compliance"
+    When I follow "Make it shiny!"
+    Then I should see "Make it shiny" within "#ticket h2"
+    And I should see "Gradients! Starbursts! Oh my!"
+￼￼  When I follow "Ticketee"
+    And I follow "Internet Explorer"
+    Then I should see "Standards compliance"
+    And I should not see "Make it shiny!"
+    When I follow "Standards compliance"
+    Then I should see "Standards compliance" within "#ticket h2"
+    And I should see "Isn't a joke."
+
+##The usage of within in cucumber
+rather than checking the entire page for content this step checks 
+the specific element using CSS
+
+so 
+Then I should see "Make it shiny" within "#ticket h2"
+
+the #ticket prefix finds all elements with an IF of ticket that contain an h2 element
+with the content you specified.
+
+
+## working with tables on Cucumber
+Given /^that project has a ticket:$/ do |table|
+  table.hashes.each do |attributes|
+    @project.tickets.create!(attributes)
+  end
+end
+
+Because you used a table here, Cucumber provides a hashes method for the table object,
+which uses the first row in the table as keys and the rest of the rows(as many as you need)
+ for the values of hashes stored in an array.
+
+
+@project haven't been yet is defined, to be able to get @project
+@project = Factory(:project, :name => name)
+in features/step_definitions/project_steps.rb
+
+Instance variables are available throughout the scenario in Cucumber, so if you define one in one step, you may use it in the following steps. If you run the feature again, you
+see that it can’t find the text for the first ticket because you’re not displaying any 
+tickets on the show template ye
+
+
+
+<div id='ticket'>
+  <h2><%= @ticket.title %></h2>
+  <%= simple_format(@ticket.description) %>
+</div>
+
+<ul id='tickets'>
+	<% @project.tickets.each do |ticket| %>
+		<li>
+			#<%= ticket.id %> - <%= link_to ticket.title, [@project, ticket] %>
+		</li>
+	<% end %>
+</ul>
+
+
+If you use a @ticket variable in place of the ticket variable in the link_to's second argument, it will be nil. 
+You haven;t initialized the @ticket variable at this point,
+and uninitialized instance variables are nil by default. If @ticket rather than the correct ticket is passed in here,
+the URL generated will be a projects URL, such as /project/1, rather than the correct /project/1/tickets/2.
+
+
+
+
+
+
+
+Feature: Viewing tickets
+In order to view the tickets for a project
+As a user
+I want to see them on that project's page
+
+Background:
+Given there are the following users:
+| email | password |
+| user@ticketee.com | password |
+And I am signed in as them
+Given there is a project called "TextMate 2"
+And "user@ticketee.com" can view the "TextMate 2" project
+And "user@ticketee.com" has created a ticket for this project:
+| title | description |
+| Make it shiny! | Gradients! Starbursts! Oh my! |
+And there is a project called "Internet Explorer"
+And "user@ticketee.com" can view the "Internet Explorer" project
+And "user@ticketee.com" has created a ticket for this project:
+| title | description |
+| Standards compliance | Isn't a joke. |
+And I am on the homepage
+
+Scenario: Viewing tickets for a given project
+When I follow "TextMate 2"
+Then I should see "Make it shiny!"
+And I should not see "Standards compliance"
+When I follow "Make it shiny!"
+Then I should see "Make it shiny" within "#ticket h2"
+And I should see "Gradients! Starbursts! Oh my!"
+
+When I follow "Ticketee"
+And I follow "Internet Explorer"
+Then I should see "Standards compliance"
+And I should not see "Make it shiny!"
+When I follow "Standards compliance"
+Then I should see "Standards compliance" within "#ticket h2"
+And I should see "Isn't a joke."
+
+
 
 
 

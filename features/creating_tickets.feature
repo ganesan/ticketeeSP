@@ -26,4 +26,4 @@ Scenario: Description must be longer than 10 characters
   And I fill in "Description" with "it sucks"
   And I press "Create Ticket"
   Then I should see "Ticket has not been created."
-  And I should see "Description is too short"
+  And I should see "Description is too short (minimum is 10 characters)"
