@@ -398,3 +398,197 @@ private
     redirect_to projects_path
   end
 
+
+######################################################
+# Nested Resource
+# features/creating_tickets.feature
+######################################################
+Feature: Creating Tickets
+In order to create tickets for projects
+As a user
+I want to be able to select a project and do that
+Background:
+  Given there is a project called "Internet Explorer"
+  And I am on the homepage
+  When I follow "Internet Explorer"
+  And I follow "New Ticket"
+Scenario: Creating a ticket
+  When I fill in "Title" with "Non-standards compliance"
+  And I fill in "Description" with "My pages are ugly!"
+  And I press "Create Ticket"
+  Then I should see "Ticket has been created."
+Scenario: Creating a ticket without valid attributes fails
+  When I press "Create Ticket"
+  Then I should see "Ticket has not been created."
+  And I should see "Title can't be blank"
+And I should see "Description can't be blank"
+
+
+## @ticket = @project.tickets.build
+
+class TicketsController < ApplicationController
+  before_filter :find_project
+  
+  def new
+    @ticket = @project.tickets.build
+  end
+
+  # Where does params[:project_id] come from? 
+  # It’s made available through the wonders of 
+  # Rails’s routing, just as params[:id] was. 
+  # It’s called project_id instead of id because 
+  # you could (and later will) have a route that you want to pass 
+  # through an ID for a ticket as well, 
+  # and that would be params[:id]. 
+  # Now how about that tickets method on your @project object? 
+  # Let’s make sure it doesn’t already exist by running 
+  # bin/ cucumber features/creating_tickets.feature:
+
+  private
+    def find_project
+      @project = Project.find(params[:project_id])
+    end
+end
+
+
+Where does params[:project_id] come from? It’s made available through the wonders of Rails’s routing, just as params[:id] was. It’s called project_id instead of id because you could (and later will) have a route that you want to pass through an ID for a ticket as well, and that would be params[:id]. Now how about that tickets method on your @project object? Let’s make sure it doesn’t already exist by running bin/ cucumber features/creating_tickets.feature:
+
+
+
+
+
+## has_many association
+
+has_many :tickets
+
+this defines the tickets method, and also build methods 
+build method is equivalent to new for the Ticket class but  associates the new bject instantly with the @project object by setting a foreign key called project_id automatically.
+
+## Uninitialized constant Project::Ticket (NameError)
+
+rails generate model ticket title:string description:text project:references
+
+the project:references defines an integer column for the tickets table called project_id
+in the migration
+this column represents the project this ticket links to and is called a foreign key
+
+### to load new schema
+rake db:migrate
+### to load new schema for the test
+rake db:test:prepare
+
+every time you add a foreign ref keys you should also recreate the test db
+
+### Using the form_for
+
+<%= form_for [@project, @ticket] do |f| %>
+	<%= f.error_message %>
+	<p>
+		<%= f.label :title %><br>
+		<%= f.text_field :title %><br>
+	</p>
+	<p>
+		<%= f.label :description %><br>
+		<%= f.text_area :description %><br>
+	</p>
+	<%= f.submit %>
+<% end %>
+
+form_for is passed an array of object rather than simply 
+<%= form_for @ticket do |f| %>
+
+### <%= form_for [@project, @ticket] do |f| %>
+indicates to form_for that you want the form to post to the nested route you're using
+
+For the new action this generate a route like /projects/1/tickets and for the edit action it generates a route like /projects/1/tickets/2
+
+
+## create function
+def create
+  @ticket = @project.tickets.build(params[:ticket])
+  if @ticket.save
+    flash[:notice] = "Ticket has been created."
+    redirect_to [@project, @ticket]
+  else
+    flash[:alert] = "Ticket has not been created."
+    render :action => "new"
+  end
+end
+
+
+inside this action, redirect_to [@project, @ticket] and specify and Array the same array you used in the form_for, containing a Project object and a Ticket object.
+
+rails determine that you want this helper
+project_ticket_path(@project, @ticket)
+
+you could specify project_ticket_path in the action but redirect_to [@project, @ticket]
+is DRYer.
+
+Find ticket associated to a project
+def find_ticket
+          @ticket = @project.tickets.find(params[:id])
+end
+
+
+
+find is yet another association method provided by Rails when you declared that your Project model has_many :tickets. 
+
+
+### http://api.rubyonrails.org/classes/ActiveRecord/Associations/ClassMethods.html
+
+before_filter :find_ticket, :only => [:show,
+                                              :edit,
+                                              :update,
+                                              :destroy]
+
+
+<div id='ticket'>
+ <h2><%= @ticket.title %></h2>
+ <%= simple_format(@ticket.description) %>
+</div>
+
+
+
+validation
+validates :title, :presence => true
+validates :description, :presence => true
+
+
+## Validation of length
+validates :description, :presence => true, :length => { :minimun => 10}
+
+go to console 
+r console
+
+and in console
+> Ticket.create! 
+
+This will give out and error message.
+
+Result:
+ActiveRecord::RecordInvalid: Validation failed: Title can't be blank, Description can't be blank, Description is too short (minimum is 10 characters)
+
+The third part is the result of output.
+
+Description can't be blank, Description is too short (minimum is 10 characters)
+
+this must be in the cucumber feature file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
