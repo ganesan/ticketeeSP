@@ -872,6 +872,23 @@ end
 user_signed_in? and current_user methods are provided by Devise
 
 
+add this to application.html.erb
+<%= link_to "Sign in", new_user_session_path %>
+
+
+Given there are the following users:
+| email             | password | unconfirmed |
+| user@ticketee.com | password | true        |
+
+
+edit Let’s alter this step definition in features/ step_definitions/user_steps.rb:
+
+Given /^there are the following users:$/ do |table|
+  table.hashes.each do |attributes|
+    unconfirmed = attributes.delete("unconfirmed") == "true"
+    @user = User.create!(attributes)
+    @user.confirm! unless unconfirmed
+end end
 
 
 
