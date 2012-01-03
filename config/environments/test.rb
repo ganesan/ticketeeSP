@@ -36,4 +36,8 @@ TicketeeSP::Application.configure do
 
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
+  
+  #This has to be added for email_spec to work
+  config.action_mailer.default_url_options = { :host => 'localhost' }
+  
 end

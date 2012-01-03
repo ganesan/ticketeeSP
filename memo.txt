@@ -802,6 +802,78 @@ rake db:migrate  && rake db:test:prepare
 
 
 
+add this to views/layout/application.html.erb
+<nav>
+      <%= link_to "Sign up", new_user_registration_path %>
+</nav>
+
+
+##Confirmation link sign-in
+With users now able to sign up to your site, you should make sure they’re also able to sign in. When users are created, they should be sent a confirmation email in which they have to click a link to confirm their email address. You don’t want users signing up with fake email addresses! Once confirmed, the user is automatically signed in by Devise.
+
+### First enable the confirmable module on app/models/user.rb
+
+devise call in app/models/user.rb:
+devise :database_authenticatable, :registerable,
+       :recoverable, :rememberable, :trackable,
+       :validatable, :confirmable
+
+### Edit the Gemfiles
+add gem 'email_spec' to the :test group
+
+### add the email steps file
+rails g email_spec:steps
+
+### require the needed file
+create a file at features/support/email.rb and add
+# Email Spec helpers
+  require 'email_spec'
+  require 'email_spec/cucumber'
+
+### Create new feature signin_in.feature
+
+Feature: Signing in
+  In order to use the site
+  As a user
+  I want to be able to sign in
+  Scenario: Signing in via confirmation
+  Given there are the following users:
+    | email             | password |
+    | user@ticketee.com | password |
+  And "user@ticketee.com" opens the email with subject "Confirmation instructions"
+  And they click the first link in the email
+  Then I should see "Your account was successfully confirmed" And I should see "Signed in as user@ticketee.com"
+
+
+### Add new migration
+rails g migration add_confirmable_fields_to_users
+
+to add cofirmation_token and cofirmation_sent_at
+
+
+### add this to the file
+class AddConfirmableFieldsToUsers < ActiveRecord::Migration
+  def change
+    add_column :users, :confirmation_token, :string
+    add_column :users, :confirmed_at, :datetime
+    add_column :users, :confimation_sent_at, :datetime
+  end
+end
+
+
+<nav>
+	<% if user_signed_in? %>
+	  Signed in as <%= current_user.email %>
+	<% else %>
+      <%= link_to "Sign up", new_user_registration_path %>
+    <% end %>
+</nav>
+
+user_signed_in? and current_user methods are provided by Devise
+
+
+
+
 
 
 
