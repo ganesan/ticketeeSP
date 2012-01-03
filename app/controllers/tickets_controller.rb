@@ -29,6 +29,10 @@ class TicketsController < ApplicationController
     
   end
   
+  
+  # this action dont have to  find the @ticket or @project objects because a before_filter
+  # does it for the show,edit,update and destroy 
+   
   def update
     if @ticket.update_attributes(params[:ticket])
       flash[:notice] = "Ticket has been updated."
@@ -39,6 +43,12 @@ class TicketsController < ApplicationController
     end
   end
   
+  def destroy  
+     @ticket.destroy
+     flash[:notice] = "Ticket has been deleted."
+     redirect_to @project
+  end
+    
   # Where does params[:project_id] come from? 
   # It’s made available through the wonders of 
   # Rails’s routing, just as params[:id] was. 
