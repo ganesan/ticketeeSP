@@ -23,6 +23,22 @@ class TicketsController < ApplicationController
     end
   end
   
+  
+  
+  def edit
+    
+  end
+  
+  def update
+    if @ticket.update_attributes(params[:ticket])
+      flash[:notice] = "Ticket has been updated."
+      redirect_to [@project, @ticket]
+    else
+      flash[:alert] = "Ticket has not been updated."
+      render :action => "edit"
+    end
+  end
+  
   # Where does params[:project_id] come from? 
   # It’s made available through the wonders of 
   # Rails’s routing, just as params[:id] was. 

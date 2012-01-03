@@ -661,8 +661,77 @@ the URL generated will be a projects URL, such as /project/1, rather than the co
 
 
 
+## dependent => :destroy
+has_many :tickets, :dependent => :destroy
+any time you call destroy on a Project object Rails iterates through each ticket for this project and calls destroy on them
+
+When you have a large number of tickets destroy will be called for each one and it will be slow.
+
+## dependent => :delete_all
+
+this simply deletes all the tickets using SQL delete like this:
+DELETE FROM tickets WHERE project_id = :project_id
+
+## dependent => :nullify
+
+Rather then deleting the tickets this option keeps it around. and insert null to the project id.
 
 
+
+## Edit tickets
+Feature: Editing tickets
+  In order to alter ticket information
+  As a user
+  I want a form to edit the tickets
+
+Background:
+  Given there is a project called "TextMate 2"
+  And that project has a ticket:
+    | title           | description                   |
+    |  Make it shiny! | Gradients! Starbursts! Oh my! |
+  Given I am on the homepage
+  When I follow "TextMate 2"
+  And I follow "Make it shiny!"
+  When I follow "Edit Ticket"
+   
+Scenario: Updating a ticket
+  When I fill in "Title" with "Make it really shiny!"
+  And I press "Update Ticket"
+  Then I should see "Ticket has been updated."
+  And I should see "Make it really shiny!" within "#ticket h2"
+  But I should not see "Make it shiny!"
+
+Scenario: Updating a ticket with invalid information
+  When I fill in "Title" with ""
+  And I press "Update Ticket"
+  Then I should see "Ticket has not been updated."
+
+
+
+## Edit with nesting 
+<%= link_to "Edit Ticket", [:edit, @project, @ticket]%>
+
+## <h2>Editing a ticket in <%= @project.name %></h2>
+<%= render "form" %>
+
+
+
+def edit
+
+end
+
+def update
+if @ticket.update_attributes(params[:ticket])
+  flash[:notice] = "Ticket has been updated."
+  redirect_to [@project, @ticket]
+else
+  flash[:alert] = "Ticket has not been updated."
+  render :action => "edit"
+end
+end
+
+## @ticket.update_atributes(params[:ticket]) 
+is used for updating
 
 
 Feature: Viewing tickets
