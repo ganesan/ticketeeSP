@@ -888,7 +888,147 @@ Given /^there are the following users:$/ do |table|
     unconfirmed = attributes.delete("unconfirmed") == "true"
     @user = User.create!(attributes)
     @user.confirm! unless unconfirmed
-end end
+  end 
+end
+
+## Authenticate Users
+  before_filter :authenticate_user!, :except => [:index, :show]
+
+This line ensures that users are authenticated before they go to any action in the con- troller that isn’t the index or show, including the new and create actions.
+
+link to the specific user
+@ticket = @project.tickets.build(params[:ticket])
+change to 
+@ticket = @project.tickets.build(params[:ticket].merge!(:user => current_user))
+
+The merge! method here is a Hash and HashWithIndifferentAccess method, which merges the provided keys into the hash and overrides any keys already specified.2 When you run the feature again using bin/cucumber features/creating_tickets .feature, it complains about an unknown attribute in all three scenarios:
+
+
+The belongs_to method defines methods for accessing the association, as has_many does, except here you retrieve only one record. 
+
+
+
+### Adding new migration
+rails g migration add_user_id_to_tickets user_id:integer
+
+
+undefined method `email' for nil:NilClass (ActionView::Template::Error)
+
+
+## creating_tickets.feature
+Change the Background
+from
+Given there is a project called "TextMate 2"
+And that project has a ticket:
+  | title           | description                   |
+  | Make it shiny! | Gradients! Starbursts! Oh my! |
+
+to 
+Given there are the following users:
+  | email             | password |
+  | user@ticketee.com | password |
+And there is a project called "TextMate 2"
+And that project has a ticket:
+  | title           | description                   |
+  |  Make it shiny! | Gradients! Starbursts! Oh my! |
+
+
+
+
+This is how the whole viewing tickets looks like
+Feature: Viewing tickets
+  In order to view the tickets for a project
+  As a user
+  I want to see them on that project's page
+
+Background:
+  Given there are the following users:
+    | email             | password |
+    | user@ticketee.com | password |
+  And there is a project called "TextMate 2"
+  And "user@ticketee.com" has created a ticket for this project:
+    | title           | description                   |
+    |  Make it shiny! | Gradients! Starbursts! Oh my! |
+  And there is a project called "Internet Explorer"
+  And "user@ticketee.com" has created a ticket for this project:
+    | title                | description   |
+    | Standards compliance | Isn’t a joke. |
+  And I am on the homepage
+  Scenario: Viewing tickets for a given project
+    When I follow "TextMate 2"
+    Then I should see "Make it shiny!"
+    And I should not see "Standards compliance"
+    When I follow "Make it shiny!"
+    Then I should see "Make it shiny" within "#ticket h2"
+    And I should see "Gradients! Starbursts! Oh my!"
+
+    When I follow "Ticketee"
+    And I follow "Internet Explorer"
+    Then I should see "Standards compliance"
+    And I should not see "Make it shiny!"
+    When I follow "Standards compliance"
+    Then I should see "Standards compliance" within "#ticket h2"
+    And I should see "Isn’t a joke."
+
+
+	Given /^"([^\"]*)" has created a ticket for this project:$/ do |email, table|
+	  table.hashes.each do |attributes|
+	    attributes = attributes.merge!(:user => User.find_by_email!(email))
+	    @project.tickets.create!(attributes)
+	  end
+	end
+	
+The merge! method here is a Hash and HashWithIndifferentAccess method, which merges the provided keys into the hash and overrides any keys already specified.
+	
+
+### Editing Tickets
+	Background:
+	          Given there are the following users:
+	            | email             | password |
+	            | user@ticketee.com | password |
+	          And I am signed in as them
+	
+    Add steps to  user_steps.rb
+	
+	Given /^I am signed in as them$/ do
+	  steps(%Q{
+	    Given I am on the homepage
+	    When I follow "Sign in"
+	    And I fill in "Email" with "#{@user.email}"
+	    And I fill in "Password" with "password"
+	    And I press "Sign in"
+	    Then I should see "Signed in successfully."
+	  }) 
+	end
+	
+	
+	
+	With this you can also edit features/signing_in.feature
+	to
+	
+	Scenario: Signing in via form
+	Given there are the following users:
+	  | email             | password |
+	  | user@ticketee.com | password |
+	  And I am signed in as them
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
 
 
 
